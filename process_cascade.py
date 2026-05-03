@@ -38,7 +38,8 @@ SYMBOLS = ["A", "B", "C", "D", "E"]
 
 
 def find_matches(board: Board) -> List[Match]:
-    matches = []
+    """Find all matches of 3 or more matching elements on the board."""
+    matches: List[Match] = []
 
     # Horizontal matches
     for row in range(board.size):
@@ -124,6 +125,7 @@ def calculate_score(removed_count: int) -> int:
 
 
 def remove_matches(current_state: BoardState, matches: List[Match]) -> BoardState:
+    """Remove matched cells, apply gravity, and update score."""
     if not matches:
         return current_state
 
@@ -145,6 +147,7 @@ def remove_matches(current_state: BoardState, matches: List[Match]) -> BoardStat
 
 
 def fill_empty_spaces(current_state: BoardState) -> BoardState:
+    """Fill empty cells with random symbols."""
     if not current_state.Board.cells:
         return current_state
 
@@ -162,5 +165,17 @@ def fill_empty_spaces(current_state: BoardState) -> BoardState:
 
 
 def initialize_game(board_size: int = 8) -> BoardState:
-    """Initialize game board with random elements and ensure no initial matches."""
-    return process_cascade(fill_empty_spaces(BoardState(Board(size=board_size), 0)))
+    """
+    Initialize game board with random elements and ensure no initial matches.
+    
+    This function creates a new board with random elements, then processes it
+    through the cascade algorithm to eliminate any initial matches.
+    """
+    return process_cascade(
+        fill_empty_spaces(
+            BoardState(
+                Board(size=board_size),
+                0
+            )
+        )
+    )
