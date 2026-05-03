@@ -49,7 +49,7 @@ def test_find_matches_multiple():
         size=3,
         cells=[
             [Element("A"), Element("A"), Element("A")],
-            [Element("A"), Element("B"), Element("C")],
+            [Element("A"), Element("A"), Element("A")],
             [Element("D"), Element("E"), Element("F")],
         ],
     )
@@ -59,8 +59,8 @@ def test_find_matches_multiple():
     assert matches[0].Row == 0
     assert matches[0].Col == 0
     assert matches[0].Length == 3
-    assert matches[1].Direction == MatchDirection.VERTICAL
-    assert matches[1].Row == 0
+    assert matches[1].Direction == MatchDirection.HORIZONTAL
+    assert matches[1].Row == 1
     assert matches[1].Col == 0
     assert matches[1].Length == 3
 

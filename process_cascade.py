@@ -39,7 +39,9 @@ class GameInitializer:
     
     def __init__(self, board_size: int = 8):
         self.board_size = board_size
-        self.current_state = BoardState(Board(size=board_size), 0)
+        # Create empty board with empty cells
+        empty_cells = [[Element() for _ in range(board_size)] for _ in range(board_size)]
+        self.current_state = BoardState(Board(size=board_size, cells=empty_cells), 0)
     
     def fill_empty(self) -> 'GameInitializer':
         """Fill empty spaces with random symbols."""
