@@ -170,12 +170,15 @@ def initialize_game(board_size: int = 8) -> BoardState:
     
     This function creates a new board with random elements, then processes it
     through the cascade algorithm to eliminate any initial matches.
+    
+    Returns:
+        BoardState: Initialized game board with no matches
     """
-    return process_cascade(
-        fill_empty_spaces(
-            BoardState(
-                Board(size=board_size),
-                0
-            )
-        )
-    )
+    # 1. Create empty board state
+    empty_state = BoardState(Board(size=board_size), 0)
+    
+    # 2. Fill empty spaces with random symbols
+    filled_state = fill_empty_spaces(empty_state)
+    
+    # 3. Process cascade to remove any initial matches
+    return process_cascade(filled_state)
