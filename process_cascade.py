@@ -50,7 +50,7 @@ class GameInitializer:
     
     def process_cascade(self) -> 'GameInitializer':
         """Process the board to remove any matches."""
-        self.current_state = process_cascade(self.current_state)
+        self.current_state = process_cascade_recursive(self.current_state)
         return self
     
     def build(self) -> BoardState:
@@ -206,3 +206,15 @@ def initialize_game(board_size: int = 8) -> BoardState:
         .process_cascade()
         .build()
     )
+
+
+def process_cascade_recursive(current_state: BoardState) -> BoardState:
+    """Recursively process the board to remove all matches."""
+    matches = find_matches(current_state.Board)
+    if not matches:
+        return current_state
+
+    state_after_removal = remove_matches(current_state, matches)
+    state_after_filling = fill_empty_spaces(state_after_removal)
+
+    return process_cascade_recursive(state_after_filling)
