@@ -161,12 +161,6 @@ def fill_empty_spaces(current_state: BoardState) -> BoardState:
     )
 
 
-def process_cascade(current_state: BoardState) -> BoardState:
-    matches = find_matches(current_state.Board)
-    if not matches:
-        return current_state
-
-    state_after_removal = remove_matches(current_state, matches)
-    state_after_filling = fill_empty_spaces(state_after_removal)
-
-    return process_cascade(state_after_filling)
+def initialize_game(board_size: int = 8) -> BoardState:
+    """Initialize game board with random elements and ensure no initial matches."""
+    return process_cascade(fill_empty_spaces(BoardState(Board(size=board_size), 0)))
