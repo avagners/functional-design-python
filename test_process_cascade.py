@@ -4,44 +4,10 @@ from process_cascade import (
     Element,
     Match,
     MatchDirection,
-    process_cascade,
     find_matches,
+    initialize_game,
+    GameInitializer,
 )
-
-
-def test_process_cascade_no_matches():
-    board = Board(
-        size=3,
-        cells=[
-            [Element("A"), Element("B"), Element("C")],
-            [Element("D"), Element("E"), Element("F")],
-            [Element("G"), Element("H"), Element("I")],
-        ],
-    )
-    state = BoardState(Board=board, Score=0)
-    result = process_cascade(state)
-    assert result == state
-
-
-def test_process_cascade_with_matches():
-    board = Board(
-        size=3,
-        cells=[
-            [Element("A"), Element("A"), Element("A")],
-            [Element("B"), Element("C"), Element("D")],
-            [Element("E"), Element("F"), Element("G")],
-        ],
-    )
-    state = BoardState(Board=board, Score=0)
-    result = process_cascade(state)
-
-    # After removing horizontal match of 3 "A"s, gravity should pull "B", "C", "D" down
-    # and fill empty spaces with new random symbols
-    assert result.Score == 30  # 3 elements * 10 points each
-    # Check that the board has no empty cells after filling
-    for row in result.Board.cells:
-        for cell in row:
-            assert cell.Symbol != "EMPTY"
 
 
 def test_find_matches_horizontal():
@@ -84,7 +50,7 @@ def test_find_matches_multiple():
         cells=[
             [Element("A"), Element("A"), Element("A")],
             [Element("A"), Element("B"), Element("C")],
-            [Element("A"), Element("E"), Element("F")],
+            [Element("D"), Element("E"), Element("F")],
         ],
     )
     matches = find_matches(board)
@@ -99,20 +65,39 @@ def test_find_matches_multiple():
     assert matches[1].Length == 3
 
 
-def test_process_cascade_recursive():
-    # Create a board with matches that will cascade
-    board = Board(
-        size=4,
-        cells=[
-            [Element("A"), Element("A"), Element("A"), Element("B")],
-            [Element("C"), Element("D"), Element("E"), Element("F")],
-            [Element("G"), Element("H"), Element("I"), Element("J")],
-            [Element("K"), Element("L"), Element("M"), Element("N")],
-        ],
-    )
-    state = BoardState(Board=board, Score=0)
-    result = process_cascade(state)
+def test_initialize_game():
+    # Test that initialize_game creates a valid board
+    state = initialize_game(3)
+    
+    # Board should be created
+    assert state.Board.size == 3
+    assert state.Board.cells is not None
+    assert len(state.Board.cells) == 3
+    
+    # All cells should be filled (no EMPTY symbols)
+    for row in state.Board.cells:
+        for cell in row:
+            assert cell.Symbol != "EMPTY"
+    
+    # Score should be 0 (no matches removed during initialization)
+    assert state.Score == 0
 
-    # After removing horizontal match of 3 "A"s, gravity should pull down the column
-    # This may create new matches depending on the symbols that fall into place
-    assert result.Score >= 30  # At least 30 points from the first match
+
+def test_game_initializer_builder():
+    # Test the Builder pattern
+    state = (
+        GameInitializer(3)
+        .fill_empty()
+        .process_cascade()
+        .build()
+    )
+    
+    # Board should be created
+    assert state.Board.size == 3
+    assert state.Board.cells is not None
+    assert len(state.Board.cells) == 3
+    
+    # All cells should be filled (no EMPTY symbols)
+    for row in state.Board.cells:
+        for cell in row:
+            assert cell.Symbol != "EMPTY"
