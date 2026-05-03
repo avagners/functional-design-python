@@ -34,6 +34,28 @@ class BoardState:
     Score: int
 
 
+class GameInitializer:
+    """Builder pattern for initializing game state with fluent interface."""
+    
+    def __init__(self, board_size: int = 8):
+        self.board_size = board_size
+        self.current_state = BoardState(Board(size=board_size), 0)
+    
+    def fill_empty(self) -> 'GameInitializer':
+        """Fill empty spaces with random symbols."""
+        self.current_state = fill_empty_spaces(self.current_state)
+        return self
+    
+    def process_cascade(self) -> 'GameInitializer':
+        """Process the board to remove any matches."""
+        self.current_state = process_cascade(self.current_state)
+        return self
+    
+    def build(self) -> BoardState:
+        """Return the final initialized game state."""
+        return self.current_state
+
+
 SYMBOLS = ["A", "B", "C", "D", "E"]
 
 
@@ -168,17 +190,17 @@ def initialize_game(board_size: int = 8) -> BoardState:
     """
     Initialize game board with random elements and ensure no initial matches.
     
-    This function creates a new board with random elements, then processes it
-    through the cascade algorithm to eliminate any initial matches.
+    Uses Builder pattern for fluent interface and clear pipeline.
     
     Returns:
         BoardState: Initialized game board with no matches
+    
+    Example:
+        state = initialize_game(8).fill_empty().process_cascade().build()
     """
-    # 1. Create empty board state
-    empty_state = BoardState(Board(size=board_size), 0)
-    
-    # 2. Fill empty spaces with random symbols
-    filled_state = fill_empty_spaces(empty_state)
-    
-    # 3. Process cascade to remove any initial matches
-    return process_cascade(filled_state)
+    return (
+        GameInitializer(board_size)
+        .fill_empty()
+        .process_cascade()
+        .build()
+    )
