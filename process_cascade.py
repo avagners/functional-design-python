@@ -241,5 +241,6 @@ def process_cascade_recursive(current_state: BoardState) -> BoardState:
     intermediate = pipe(
         current_state,
         lambda state: remove_matches(state, matches)
-    ).pipe(fill_empty_spaces)
-    return intermediate.pipe(process_cascade_recursive)
+    )
+    intermediate = pipe(intermediate, fill_empty_spaces)
+    return pipe(intermediate, process_cascade_recursive)
