@@ -1,7 +1,22 @@
 from dataclasses import dataclass
 from enum import Enum
 import random
-from typing import List, Optional
+from typing import List, Optional, Callable, TypeVar
+
+
+T = TypeVar('T')
+
+
+def pipe(value: T, func: Callable[[T], any]) -> any:
+    """
+    Pipe function for pipeline-style processing.
+    
+    Allows chaining function calls in a readable left-to-right manner.
+    
+    Example:
+        result = pipe(data, transform).pipe(filter).pipe(collect)
+    """
+    return func(value)
 
 
 class MatchDirection(Enum):
@@ -192,29 +207,39 @@ def initialize_game(board_size: int = 8) -> BoardState:
     """
     Initialize game board with random elements and ensure no initial matches.
     
-    Uses Builder pattern for fluent interface and clear pipeline.
+    Uses pipe pattern for pipeline-style processing, making the code readable
+    from left to right.
     
     Returns:
         BoardState: Initialized game board with no matches
     
     Example:
-        state = initialize_game(8).fill_empty().process_cascade().build()
+        state = initialize_game(8)
     """
-    return (
-        GameInitializer(board_size)
-        .fill_empty()
-        .process_cascade()
-        .build()
-    )
+    # Create empty board state and chain operations using pipe
+    return pipe(
+        BoardState(Board(size=board_size, cells=[[Element() for _ in range(board_size)] for _ in range(board_size)]), 0),
+        fill_empty_spaces
+    ).pipe(process_cascade_recursive)
 
 
 def process_cascade_recursive(current_state: BoardState) -> BoardState:
-    """Recursively process the board to remove all matches."""
+    """
+    Recursively process the board to remove all matches using pipeline style.
+    
+    This function uses the pipe pattern to chain operations in a readable way:
+    1. Find matches
+    2. If no matches, return current state
+    3. Otherwise remove matches and fill empty spaces
+    4. Recursively process the new state
+    """
     matches = find_matches(current_state.Board)
     if not matches:
         return current_state
 
-    state_after_removal = remove_matches(current_state, matches)
-    state_after_filling = fill_empty_spaces(state_after_removal)
-
-    return process_cascade_recursive(state_after_filling)
+    # Chain operations using pipe pattern
+    return pipe(
+        current_state,
+        lambda state: remove_matches(state, matches)
+    ).pipe(fill_empty_spaces)
+    .pipe(process_cascade_recursive)
