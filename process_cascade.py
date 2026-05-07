@@ -220,7 +220,7 @@ def initialize_game(board_size: int = 8) -> BoardState:
     return pipe(
         BoardState(Board(size=board_size, cells=[[Element() for _ in range(board_size)] for _ in range(board_size)]), 0),
         fill_empty_spaces
-    ).pipe(process_cascade_recursive)
+    )
 
 
 def process_cascade_recursive(current_state: BoardState) -> BoardState:
