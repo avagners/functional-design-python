@@ -236,11 +236,8 @@ def process_cascade_recursive(current_state: BoardState) -> BoardState:
     """
     Recursively process the board to remove all matches using pipeline style.
     
-    This function uses the pipe pattern to chain operations in a readable way:
-    1. Find matches
-    2. If no matches, return current state
-    3. Otherwise remove matches and fill empty spaces
-    4. Recursively process the new state
+    This function uses the pipe pattern to chain operations in a readable way,
+    exactly as shown in the material 20).
     
     Example:
         state.pipe(fill_empty_spaces).pipe(process_cascade_recursive)
@@ -248,11 +245,12 @@ def process_cascade_recursive(current_state: BoardState) -> BoardState:
     matches = find_matches(current_state.Board)
     if not matches:
         return current_state
-
+    
     # Chain operations using pipe pattern with dot notation
+    # Exactly as in the C# example but adapted for Python
     return (
         current_state
-        .pipe(lambda state: remove_matches(state, matches))
+        .pipe(lambda bs: remove_matches(bs, matches))
         .pipe(fill_empty_spaces)
         .pipe(process_cascade_recursive)
     )
