@@ -12,6 +12,7 @@ def pipe(value: T, func: Callable[[T], any]) -> any:
     Pipe function for pipeline-style processing.
     
     Allows chaining function calls in a readable left-to-right manner.
+    This is a standalone function that enables the pipe pattern.
     
     Example:
         result = pipe(data, transform).pipe(filter).pipe(collect)
@@ -47,6 +48,10 @@ class Board:
 class BoardState:
     Board: Board
     Score: int
+
+
+# Extension method for BoardState to enable pipe pattern with dot notation
+BoardState.pipe = lambda self, func: func(self)
 
 
 class GameInitializer:
@@ -208,7 +213,7 @@ def initialize_game(board_size: int = 8) -> BoardState:
     Initialize game board with random elements and ensure no initial matches.
     
     Uses pipe pattern for pipeline-style processing, making the code readable
-    from left to right.
+    from left to right, exactly as shown in the materials.
     
     Returns:
         BoardState: Initialized game board with no matches
@@ -216,10 +221,14 @@ def initialize_game(board_size: int = 8) -> BoardState:
     Example:
         state = initialize_game(8)
     """
-    # Create empty board state and chain operations using pipe
-    return pipe(
-        BoardState(Board(size=board_size, cells=[[Element() for _ in range(board_size)] for _ in range(board_size)]), 0),
-        fill_empty_spaces
+    # Create empty board state and chain operations using pipe with dot notation
+    return (
+        BoardState(
+            Board(size=board_size, cells=[[Element() for _ in range(board_size)] for _ in range(board_size)]),
+            0
+        )
+        .pipe(fill_empty_spaces)
+        .pipe(process_cascade_recursive)
     )
 
 
@@ -232,15 +241,18 @@ def process_cascade_recursive(current_state: BoardState) -> BoardState:
     2. If no matches, return current state
     3. Otherwise remove matches and fill empty spaces
     4. Recursively process the new state
+    
+    Example:
+        state.pipe(fill_empty_spaces).pipe(process_cascade_recursive)
     """
     matches = find_matches(current_state.Board)
     if not matches:
         return current_state
 
-    # Chain operations using pipe pattern
-    intermediate = pipe(
-        current_state,
-        lambda state: remove_matches(state, matches)
+    # Chain operations using pipe pattern with dot notation
+    return (
+        current_state
+        .pipe(lambda state: remove_matches(state, matches))
+        .pipe(fill_empty_spaces)
+        .pipe(process_cascade_recursive)
     )
-    intermediate = pipe(intermediate, fill_empty_spaces)
-    return pipe(intermediate, process_cascade_recursive)
