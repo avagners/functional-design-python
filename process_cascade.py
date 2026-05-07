@@ -238,8 +238,8 @@ def process_cascade_recursive(current_state: BoardState) -> BoardState:
         return current_state
 
     # Chain operations using pipe pattern
-    return pipe(
+    intermediate = pipe(
         current_state,
         lambda state: remove_matches(state, matches)
     ).pipe(fill_empty_spaces)
-    .pipe(process_cascade_recursive)
+    return intermediate.pipe(process_cascade_recursive)
