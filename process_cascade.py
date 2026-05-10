@@ -232,12 +232,39 @@ def fill_empty_spaces(current_state: BoardState) -> BoardState:
     )
 
 
+def build_game_pipeline(debug: bool = False) -> Callable[[BoardState], BoardState]:
+    """
+    Build the game processing pipeline as a function.
+    
+    This function creates a pipeline that chains the main processing steps
+    (fill_empty_spaces, process_cascade_recursive) for use in the main algorithm.
+    Corresponds to BuildGamePipeline() from material 24).
+    
+    Args:
+        debug: If True, includes draw() calls in the pipeline for debugging
+    
+    Returns:
+        A function that takes BoardState and returns processed BoardState
+    
+    Example:
+        pipeline = build_game_pipeline(debug=True)
+        state.pipe(pipeline)
+    """
+    def pipeline(bs: BoardState) -> BoardState:
+        result = bs.pipe(fill_empty_spaces)
+        if debug:
+            result.pipe(draw)
+        return result.pipe(lambda state: process_cascade_recursive(state, debug))
+    
+    return pipeline
+
+
 def initialize_game(board_size: int = 8, debug: bool = False) -> BoardState:
     """
     Initialize game board with random elements and ensure no initial matches.
     
     Uses pipe pattern for pipeline-style processing, making the code readable
-    from left to right, exactly as shown in the materials.
+    from left to right, exactly as shown in the materials 24).
     
     Args:
         board_size: Size of the board (default 8)
@@ -248,15 +275,15 @@ def initialize_game(board_size: int = 8, debug: bool = False) -> BoardState:
     
     Example:
         state = initialize_game(8)
+        state = initialize_game(8, debug=True)
     """
-    # Create empty board state and chain operations using pipe
+    # Create empty board state and apply the pipeline
     return (
         BoardState(
             Board(size=board_size, cells=[[Element() for _ in range(board_size)] for _ in range(board_size)]),
             0
         )
-        .pipe(fill_empty_spaces)
-        .pipe(lambda bs: process_cascade_recursive(bs, debug))
+        .pipe(build_game_pipeline(debug))
     )
 
 
