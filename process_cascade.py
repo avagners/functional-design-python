@@ -232,6 +232,30 @@ def initialize_game(board_size: int = 8) -> BoardState:
     )
 
 
+def process_cascade_pipeline(current_state: BoardState, matches: List[Match]) -> BoardState:
+    """
+    Pipeline function that chains the main processing steps.
+    
+    This function encapsulates the pipeline as a separate function,
+    as suggested in material 23) "Конвейер как функция".
+    
+    Args:
+        current_state: Current board state
+        matches: List of matches to remove
+    
+    Returns:
+        Processed board state
+    
+    Example:
+        state.pipe(lambda bs: process_cascade_pipeline(bs, find_matches(bs.Board)))
+    """
+    return (
+        current_state
+        .pipe(lambda bs: remove_matches(bs, matches))
+        .pipe(fill_empty_spaces)
+    )
+
+
 def process_cascade_recursive(current_state: BoardState) -> BoardState:
     """
     Recursively process the board to remove all matches using pipeline style.
@@ -240,17 +264,15 @@ def process_cascade_recursive(current_state: BoardState) -> BoardState:
     exactly as shown in the material 20).
     
     Example:
-        state.pipe(fill_empty_spaces).pipe(process_cascade_recursive)
+        state.pipe(process_cascade_recursive)
     """
     matches = find_matches(current_state.Board)
     if not matches:
         return current_state
     
     # Chain operations using pipe pattern with dot notation
-    # Exactly as in the C# example but adapted for Python
     return (
         current_state
-        .pipe(lambda bs: remove_matches(bs, matches))
-        .pipe(fill_empty_spaces)
+        .pipe(lambda bs: process_cascade_pipeline(bs, find_matches(bs.Board)))
         .pipe(process_cascade_recursive)
     )
