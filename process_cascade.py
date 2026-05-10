@@ -54,6 +54,30 @@ class BoardState:
 BoardState.pipe = lambda self, func: func(self)
 
 
+def draw(board_state: BoardState, ask: bool = False) -> BoardState:
+    """
+    Draw the board state to console for debugging.
+    
+    This function prints the board in a readable format, similar to the C# example
+    in materials 21) and 22).
+    
+    Args:
+        board_state: The board state to draw
+        ask: If True, waits for user input after drawing (for debugging)
+    
+    Returns:
+        The same board state (for pipeline chaining)
+    """
+    board = board_state.Board
+    print(f"  {' '.join(str(i) for i in range(board.size))}")
+    for i in range(board.size):
+        print(f"{i} {' '.join(cell.Symbol for cell in board.cells[i])}")
+    print()
+    if ask:
+        input("Press Enter to continue...")
+    return board_state
+
+
 class GameInitializer:
     """Builder pattern for initializing game state with fluent interface."""
     
@@ -208,12 +232,16 @@ def fill_empty_spaces(current_state: BoardState) -> BoardState:
     )
 
 
-def initialize_game(board_size: int = 8) -> BoardState:
+def initialize_game(board_size: int = 8, debug: bool = False) -> BoardState:
     """
     Initialize game board with random elements and ensure no initial matches.
     
     Uses pipe pattern for pipeline-style processing, making the code readable
     from left to right, exactly as shown in the materials.
+    
+    Args:
+        board_size: Size of the board (default 8)
+        debug: If True, draws intermediate board states for debugging
     
     Returns:
         BoardState: Initialized game board with no matches
@@ -221,18 +249,18 @@ def initialize_game(board_size: int = 8) -> BoardState:
     Example:
         state = initialize_game(8)
     """
-    # Create empty board state and chain operations using pipe with dot notation
+    # Create empty board state and chain operations using pipe
     return (
         BoardState(
             Board(size=board_size, cells=[[Element() for _ in range(board_size)] for _ in range(board_size)]),
             0
         )
         .pipe(fill_empty_spaces)
-        .pipe(process_cascade_recursive)
+        .pipe(lambda bs: process_cascade_recursive(bs, debug))
     )
 
 
-def process_cascade_pipeline(current_state: BoardState, matches: List[Match]) -> BoardState:
+def process_cascade_pipeline(current_state: BoardState, matches: List[Match], debug: bool = False) -> BoardState:
     """
     Pipeline function that chains the main processing steps.
     
@@ -242,6 +270,7 @@ def process_cascade_pipeline(current_state: BoardState, matches: List[Match]) ->
     Args:
         current_state: Current board state
         matches: List of matches to remove
+        debug: If True, draws intermediate board states for debugging
     
     Returns:
         Processed board state
@@ -249,19 +278,30 @@ def process_cascade_pipeline(current_state: BoardState, matches: List[Match]) ->
     Example:
         state.pipe(lambda bs: process_cascade_pipeline(bs, find_matches(bs.Board)))
     """
-    return (
+    intermediate = (
         current_state
         .pipe(lambda bs: remove_matches(bs, matches))
-        .pipe(fill_empty_spaces)
     )
+    
+    if debug:
+        intermediate.pipe(draw)
+    
+    return intermediate.pipe(fill_empty_spaces)
 
 
-def process_cascade_recursive(current_state: BoardState) -> BoardState:
+def process_cascade_recursive(current_state: BoardState, debug: bool = False) -> BoardState:
     """
     Recursively process the board to remove all matches using pipeline style.
     
     This function uses the pipe pattern to chain operations in a readable way,
-    exactly as shown in the material 20).
+    exactly as shown in the materials 20), 21), and 22).
+    
+    Args:
+        current_state: Current board state
+        debug: If True, draws intermediate board states for debugging
+    
+    Returns:
+        Processed board state
     
     Example:
         state.pipe(process_cascade_recursive)
@@ -273,6 +313,6 @@ def process_cascade_recursive(current_state: BoardState) -> BoardState:
     # Chain operations using pipe pattern with dot notation
     return (
         current_state
-        .pipe(lambda bs: process_cascade_pipeline(bs, find_matches(bs.Board)))
-        .pipe(process_cascade_recursive)
+        .pipe(lambda bs: process_cascade_pipeline(bs, matches, debug))
+        .pipe(lambda bs: process_cascade_recursive(bs, debug))
     )
